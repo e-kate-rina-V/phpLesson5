@@ -45,14 +45,7 @@ interface PaymentMethod
 # Створення абстрактного класу `Vehicle`
 abstract class Vehicle
 {
-    protected $brand, $model, $year;
-
-    public function __construct($brand, $model, $year)
-    {
-        $this->brand = $brand;
-        $this->model = $model;
-        $this->year = $year;
-    }
+    public function __construct(protected $brand, protected $model, protected $year) {}
 
     # Створення абстрактної функції для підрахунку оренди транспортного засобу
     abstract public function calculateRentalCost($days);
@@ -129,16 +122,7 @@ class Motorcycle extends Vehicle
 # Створення класу CreditCardPayment (оплати кредитною картою), що імлементує інтерфейс PaymentMethod 
 class CreditCardPayment implements PaymentMethod
 {
-    private $cardNumber, $expirationDate;
-
-    public function __construct($cardNumber, $expirationDate)
-    {
-        if (empty($cardNumber)) {
-            throw new RentalException("Invalid credit card number");
-        }
-        $this->cardNumber = $cardNumber;
-        $this->expirationDate = $expirationDate;
-    }
+    public function __construct(private string $cardNumber, private string $expirationDate) {}
 
     # Створення методу для обробки процесу оплати 
     public function processPayment($amount)
@@ -169,21 +153,11 @@ class CashPayment implements PaymentMethod
 # Клас, що реалізує оплату за допомогою PayPal
 class PayPalPayment implements PaymentMethod
 {
-    private $email;
-    private $password;
-
-    public function __construct($email, $password)
+    public function __construct(private $email, private string $password)
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new RentalException("Invalid email address.");
         }
-
-        if (empty($password)) {
-            throw new RentalException("Password cannot be empty.");
-        }
-
-        $this->email = $email;
-        $this->password = $password;
     }
 
     public function processPayment($amount)
@@ -199,19 +173,13 @@ class PayPalPayment implements PaymentMethod
 # Клас, що реалізує оплату банківським переказом
 class BankTransferPayment implements PaymentMethod
 {
-    private $bankAccount;
-    private $IBAN;
-
-    public function __construct($bankAccount, $IBAN)
+    public function __construct(private string $bankAccount, private string $IBAN)
     {
-        $this->bankAccount = $bankAccount;
-        $this->IBAN = $IBAN;
-
-        if (empty($bankAccount) || !preg_match('/^\d{10,12}$/', $bankAccount)) {
+        if (!preg_match('/^\d{10,12}$/', $bankAccount)) {
             throw new RentalException("Invalid bank account number.");
         }
 
-        if (empty($IBAN) || !preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/', $IBAN)) {
+        if (!preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/', $IBAN)) {
             throw new RentalException("Invalid IBAN.");
         }
     }
@@ -229,21 +197,11 @@ class BankTransferPayment implements PaymentMethod
 # Клас, що реалізує оплату за допомогою мобільного телефона
 class MobilePayment implements PaymentMethod
 {
-    private $phoneNumber;
-    private $service;
-
-    public function __construct($phoneNumber, $service)
+    public function __construct(private string $phoneNumber, private string $service)
     {
-        if (empty($phoneNumber)) {
-            throw new RentalException("Invalid phone number.");
-        }
-
-        if (empty($service) || !in_array($service, ['Apple Pay', 'Google Pay'])) {
+        if (!in_array($service, ['Apple Pay', 'Google Pay'])) {
             throw new RentalException("Invalid payment service.");
         }
-
-        $this->phoneNumber = $phoneNumber;
-        $this->service = $service;
     }
 
     public function processPayment($amount)
@@ -259,16 +217,7 @@ class MobilePayment implements PaymentMethod
 # Клас, що реалізує оплату за допомогою криптовалют
 class BitcoinPayment implements PaymentMethod
 {
-    private $walletAddress;
-
-    public function __construct($walletAddress)
-    {
-        if (empty($walletAddress)) {
-            throw new RentalException("Invalid Bitcoin wallet address.");
-        }
-
-        $this->walletAddress = $walletAddress;
-    }
+    public function __construct(private string $walletAddress) {}
 
     public function processPayment($amount)
     {
